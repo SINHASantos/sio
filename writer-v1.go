@@ -54,7 +54,7 @@ func (w *decWriterV10) Write(p []byte) (n int, err error) {
 		if len(p) < remaining {
 			n = copy(w.buffer[w.offset:], p)
 			w.offset += n
-			return
+			return n, err
 		}
 		n = copy(w.buffer[w.offset:], p[:remaining])
 		p = p[remaining:]
@@ -113,7 +113,7 @@ func (w *decWriterV10) Close() (err error) {
 
 	if w.closeErr != nil {
 		if dst, ok := w.dst.(io.Closer); ok {
-			dst.Close()
+			_ = dst.Close()
 		}
 		return w.closeErr
 	}
@@ -183,7 +183,7 @@ func (w *encWriterV10) Write(p []byte) (n int, err error) {
 		if len(p) < remaining {
 			n = copy(w.buffer[headerSize+w.offset:], p)
 			w.offset += n
-			return
+			return n, err
 		}
 		n = copy(w.buffer[headerSize+w.offset:], p[:remaining])
 		w.Seal(w.buffer, w.buffer[headerSize:headerSize+w.payloadSize])
@@ -209,7 +209,7 @@ func (w *encWriterV10) Write(p []byte) (n int, err error) {
 		w.offset = copy(w.buffer[headerSize:], p)
 		n += w.offset
 	}
-	return
+	return n, err
 }
 
 func (w *encWriterV10) Close() (err error) {
@@ -217,7 +217,7 @@ func (w *encWriterV10) Close() (err error) {
 
 	if w.closeErr != nil {
 		if dst, ok := w.dst.(io.Closer); ok {
-			dst.Close()
+			_ = dst.Close()
 		}
 		return w.closeErr
 	}

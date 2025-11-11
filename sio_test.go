@@ -438,7 +438,7 @@ func TestVerifySequenceNumbers(t *testing.T) {
 }
 
 func testFile(t *testing.T, file string) {
-	data, err := os.ReadFile(file)
+	data, err := os.ReadFile(file) //nolint:gosec // Test file
 	if err != nil {
 		t.Errorf("Failed to read file: %s - %v", file, err)
 	}
@@ -516,7 +516,7 @@ func TestAppending(t *testing.T) {
 			if _, err := Encrypt(dst, bytes.NewReader(data), config); err != nil {
 				t.Fatalf("Test %d: Failed to encrypt %d part: %v", i, j, err)
 			}
-			config.SequenceNumber += uint32(test.datasize / maxPayloadSize)
+			config.SequenceNumber += uint32(test.datasize / maxPayloadSize) //nolint:gosec // Test data size conversion
 			if test.datasize%maxPayloadSize > 0 {
 				config.SequenceNumber++
 			}
@@ -532,7 +532,7 @@ type devNull struct{ zero [8 * 1024]byte }
 func (r *devNull) Read(p []byte) (n int, err error) {
 	if len(p) < len(r.zero) {
 		n = copy(p, r.zero[:len(p)])
-		return
+		return n, err
 	}
 	for len(p) >= len(r.zero) {
 		n += copy(p, r.zero[:])
@@ -541,7 +541,7 @@ func (r *devNull) Read(p []byte) (n int, err error) {
 	if len(p) > 0 {
 		n += copy(p, r.zero[:len(p)])
 	}
-	return
+	return n, err
 }
 
 func TestLargeStream(t *testing.T) {
